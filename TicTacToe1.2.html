@@ -1,0 +1,169 @@
+<!--HTML5 para renderizar el archivo-->
+<!DOCTYPE html>
+<html>
+  <head>
+	<style type="text/css">
+		body{
+			text-align:center;
+		}
+		.caja{
+			text-align:left;
+			width:auto;
+			height:auto;
+		}
+		h3{
+			position:relative;
+		}
+		canvas{
+			position:relative;
+		}
+	</style>
+		<!--Lenguaje Javascript-->
+		<script type="text/javascript">
+		//Hay 4 funciones: window.onload(), canvasClicked(), checkForWinners() y playAgain()
+		//Variable globales usadas en el html para mantener ciertos valores del juego
+		//Es innecesario declarar la variable como Integer o String, javascript determina el tipo de dato
+		var pintado;
+		var contenido;
+		var combinacionesGanadoras;
+		var turno = 0;
+		//La variable elCanvas es global, no necesita instanciar siempre algun valor
+		var elCanvas;
+		var c;
+		var cxt;
+		var cuadrosLlenos = 0;
+		var w;
+		var y;
+ 
+//Arreglos son grupos de informacion accesados atraves de indices
+//En esta funcion sirve para instanciar los arreglos: contenido, winningCombination y pintado
+window.onload=function(){
+     
+     //El arreglo pintado revisa si el canvas contiene algo para prevenir usarlo de nuevo
+    pintado = new Array();
+    //El arreglo canvas para ver los canvas que contiene
+    contenido = new Array();
+    //winningCombination es un arreglo multidimensional, utiliza 1 o mas indices, todas las posibles combinaciones cuando un jugador gana
+    combinacionesGanadoras = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+ 	//Este Ciclo for da valores a los arreglos pintado[] y contenido[]
+    for(var l = 0; l <= 8; l++){
+    pintado[l] = false;
+    contenido[l]='';
+    }
+}
+ 
+//La llamada canvasClicked() da el numero para enviarlo del body del html a la variable numeroCanvas
+//Se pasa un numero a esta funcion que siempre usa ese valor
+function canvasClicked(numeroCanvas){
+    elCanvas = "canvas"+numeroCanvas;
+    //La variable elCanvas es global, no necesita instanciar siempre algun valor
+    //La varible elCanvas es un String que se agregara al final de la cola de la variable numeroCanvas
+    //Esto dara el nombre de cualquier canvas en el body
+    //Asi, al dar click encima de canvas1, canvasClicked recibe 1, instantaneamente elCanvas recibe el valor de canvas1
+    //La variable c mantiene el canvas deseado, asi document.getElementById es usado para accesar las diferentes partes del html
+    c = document.getElementById(elCanvas);
+    //El contexto canvas usa 2d para dibujar las coordenadas x y y 
+    cxt = c.getContext("2d");
+ 
+ 	//Si el canvas no esta ocupado, entonces se dibuja sobre ello
+    if(pintado[numeroCanvas-1] ==false){
+    	//Esta condicion determina de quien es el turno, despues se dibuja el canvas una X
+        if(turno%2==0){
+        	//Empezar a dibujar
+            cxt.beginPath();
+            //Mover el lapiz imaginario a un sitio especifico del canvas, el primer valor es x 
+            cxt.moveTo(10,10);
+            //Dibujar la linea desde la coordenada 10,10 hasta la coordenada 40, 40
+            cxt.lineTo(40,40);
+            //Poner el cursor imaginario en las coordenadas 40,10
+            cxt.moveTo(40,10);
+            //Dibujar una linea hasta la coordenada 10,40
+            cxt.lineTo(10,40);
+            cxt.stroke();
+            cxt.closePath();
+            contenido[numeroCanvas-1] = 'X';
+        }
+ 		//Si no es una X, ahora es el turno de dibujar un circulo
+        else{
+            cxt.beginPath();
+            //Se utiliza el metodo arc() para dibujar el circulo, se necesitan 3 variables x,y y el radio
+            cxt.arc(25,25,20,0,Math.PI*2,true);
+            cxt.stroke();
+            cxt.closePath();
+            contenido[numeroCanvas-1] = 'O';
+        }
+ 
+ 		//Cada vez que se incrementa la variable turno cambia de jugador
+        turno++;
+        //Este determinado canvas esta ocupado
+        pintado[numeroCanvas-1] = true;
+        //El numero de canvas ocupados incrementa hasta llegar a 9
+        cuadrosLlenos++;
+        //La funcion checkForWinners() recibe como parametro el contenido del canvas actual para saber cual jugador sigue  
+        checkForWinners(contenido[numeroCanvas-1]);
+ 
+        if(cuadrosLlenos==9){
+            alert("El juego ha finalizado");
+            location.reload(true);
+        }
+     
+    }
+    else{
+        alert("Ese espacio esta ocupado");
+    }
+ 
+}
+
+//Despues de dibujar el simbolo apropiado despues de cada turno, se necesita saber si ese turno decide el ganador del juego
+//La funcion checkForWinner() sirve para saber que jugador hace un movimiento
+function checkForWinners(symbol){
+     
+    //Ciclo for para dar contenido al arreglo combinacionesGanadoras, este arreglo contiene X o O  
+    for(var a = 0; a < combinacionesGanadoras.length; a++){
+    //Decir contenido[combinacionesGanadoras[a][2]] es equivalente a decir contenido[algun numero de canvas]
+    if(contenido[combinacionesGanadoras[a][0]]==symbol&&contenido[combinacionesGanadoras[a][1]]== symbol&&contenido[combinacionesGanadoras[a][2]]==symbol){
+        alert(symbol+ " es el ganador!");
+        playAgain();
+    }
+    }
+ 
+}
+ 
+function playAgain(){
+	//Mostrar un popup si queremos volver a jugar, click en OK devuelve true
+    y=confirm("Jugar de nuevo?");
+    if(y==true){
+        location.reload(true);
+    }
+    else{
+        alert("Hasta luego!");
+}
+}
+		
+		</script>
+	</head>
+	<body>
+	<div id="caja">
+	<h3>Tic Tac Toe</h3>
+	<!--Nuevas caracteristicas de HTML5: canvas-->
+	<!--Dibujamos un cuadrado, le damos un id para no confundir los 9 canvas del mapa-->
+	<!--Cuando le damos click al canvas tiene que hacer algo, dibujar un circulo o X, para eso la funcion en javascript -->
+	<!--Creamos 9 cuadrados del mapa con su respectivo id-->
+	<!--Al dar click al canvas, automaticamente el browser llama a la funcion canvasClicked()-->
+	<!--Una funcion es una serie de procesos para realizar una tarea especifica-->
+	<!--La llamada a la funcion canvasClicked() lleva consigo un numero como parametro-->
+	<canvas id="canvas1" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(1)"></canvas>
+	<canvas id="canvas2" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(2)"></canvas>
+	<canvas id="canvas3" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(3)"></canvas><br>
+	<canvas id="canvas4" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(4)"></canvas>
+	<canvas id="canvas5" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(5)"></canvas>
+	<canvas id="canvas6" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(6)"></canvas><br>
+	<canvas id="canvas7" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(7)"></canvas>
+	<canvas id="canvas8" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(8)"></canvas>
+	<canvas id="canvas9" width="50" height="50" style="border:1px solid black" onclick="canvasClicked(9)"></canvas>
+	</div>
+	</body>
+</html>
+
+
+
